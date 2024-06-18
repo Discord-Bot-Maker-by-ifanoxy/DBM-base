@@ -1,10 +1,10 @@
-import {AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
+import {AutocompleteInteraction, ChatInputCommandInteraction, Embed, SlashCommandBuilder} from "discord.js";
 import {DBMClient} from "../DBMClient";
 
-export interface SlashCommandFile<T extends object = {}> {
+export interface SlashCommandFile {
     builder: SlashCommandBuilder,
-    autocomplete: (client: DBMClient, interaction: AutocompleteInteraction, embeds: T) => unknown,
-    execute: (client: DBMClient, interaction: ChatInputCommandInteraction, embeds: T) => unknown,
-    embeds_path: string,
+    autocomplete?: (client: DBMClient, interaction: AutocompleteInteraction) => unknown,
+    execute: (client: DBMClient, interaction: ChatInputCommandInteraction) => unknown,
+    embeds: { [k: string]: Embed},
     plugin_name: string
 }

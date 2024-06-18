@@ -22,7 +22,7 @@ export class Components {
         let componentsPath: string[] = [];
         this.client.config.plugins.map(x => this.client.plugins[x]?.config).filter(x => x?.componentsDir).forEach(v => {
             try {
-                const components = Handler.getPathsFiles(`./plugins/${v.name}/${v.componentsDir}`);
+                const components = Handler.getPathsFiles(`./plugins/${v.name}/dist/${v.componentsDir}`);
                 this.client.logger.info(`> Plugin ${v.name} - ${components.length} components added`);
                 componentsPath.concat(components);
             } catch {
@@ -32,7 +32,7 @@ export class Components {
 
         for (let path of componentsPath)
         {
-            const dist = require('../../../' + path) as ComponentFile;
+            const dist = require('../../../' + path).default as ComponentFile;
             const type = this.data.get(ComponentType[dist.type] as keyof typeof ComponentType);
             type?.set(dist.customId, dist);
         }

@@ -1,17 +1,18 @@
-import {Client, IntentsBitField} from "discord.js";
+import {Client, ComponentType, IntentsBitField} from "discord.js";
 import {Config} from "./typings/Config";
 import {Logger} from "./Logger";
 import {PluginsNames} from "./typings/PluginsNames";
 import {Handler} from "./Handler";
 import {Database} from "./Database";
 import * as fs from "fs";
+import {PluginConfig} from "./typings/PluginConfig";
 
 export class DBMClient extends Client {
     public config: Config;
     public logger: Logger;
-    public plugins: { [k in PluginsNames]?: { config: any, main?: any}};
+    public plugins: { [k in PluginsNames]: { config: PluginConfig, main?: any}};
     public handler: Handler;
-    private database: Database;
+    public database: Database;
     public constructor(Intents: IntentsBitField[], config: Config) {
         super({
             intents: Intents
@@ -20,6 +21,7 @@ export class DBMClient extends Client {
         this.logger = new Logger(this);
         this.handler = new Handler(this);
         this.database = new Database(this);
+        // @ts-ignore
         this.plugins = {};
         this.init();
     }
@@ -35,6 +37,7 @@ export class DBMClient extends Client {
     }
 
     private async init() {
+        this.interactionHandler();
         this.logger.info(`Loading ${this.config.plugins.length} Plugins.`);
         await this.loadPlugins();
         this.logger.info(`Starting handler.`);
@@ -48,10 +51,10 @@ export class DBMClient extends Client {
         await Promise.all(this.config.plugins.map(async v => {
             try {
                 const plugin_config = require(`../../plugins/${v}/plugin.config.json`);
-                const mainInstance = fs.existsSync(`./plugins/${v}/index.js`) ? require(`../../plugins/${v}/index.js`) : null;
+                const mainInstance = fs.existsSync(`./plugins/${v}/dist/index.js`) ? require(`../../plugins/${v}/dist/index.js`) : null;
                 this.plugins[v] = {
                     config: plugin_config,
-                    main: mainInstance ? new mainInstance(this) : null,
+                    main: mainInstance ? new mainInstance.default(this) : null,
                 };
                 this.logger.info(`> Plugin ${v} loaded`);
             } catch (e) {
@@ -66,8 +69,19 @@ export class DBMClient extends Client {
             {
                 const command = this.handler.slashcommands?.data.get(interaction.commandName);
                 if (!command)return this.logger.warn(`slashcommand ${interaction.commandName} not found`);
-                const embed = require(`../../plugins/${command.plugin_name}/${command.embeds_path}`);
-                command.execute(this, interaction, embed ?? {});
+                command.execute(this, interaction);
+            } else if (interaction.isAutocomplete())
+            {
+
+                const command = this.handler.slashcommands?.data.get(interaction.commandName);
+                if (!command || !command?.autocomplete)return this.logger.warn(`autocomplete ${interaction.commandName} not found`);
+                command.autocomplete(this, interaction);
+            } else if (interaction.isMessageComponent())
+            {
+                const componentsData = this.handler.components?.data.get(ComponentType[interaction.componentType] as keyof typeof ComponentType);
+                const component = componentsData?.get(interaction.customId.split("#")[0]);
+                if (!component)return this.logger.warn(`component ${ComponentType[interaction.componentType]} ${interaction.customId.split("#")[0]} not found`);
+                component.execute(this, interaction);
             }
         })
     }

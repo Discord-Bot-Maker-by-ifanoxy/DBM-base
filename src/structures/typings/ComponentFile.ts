@@ -5,6 +5,7 @@ import {
     ModalSubmitInteraction,
 } from "discord.js";
 import {DBMClient} from "../DBMClient";
+import {Embed} from "discord.js/typings";
 
 type AnyInteraction =
     AutocompleteInteraction |
@@ -12,9 +13,9 @@ type AnyInteraction =
     AnySelectMenuInteraction |
     ModalSubmitInteraction
 
-export interface ComponentFile<I extends AnyInteraction | any = any, T extends object = {}> {
+export interface ComponentFile<I extends AnyInteraction | any = any> {
     customId: string,
     type: ComponentType,
-    execute: (client: DBMClient, interaction: I extends AnyInteraction ? I : any, embeds: T) => unknown,
-    embeds_path: string
+    execute: (client: DBMClient, interaction: I extends AnyInteraction ? I : any) => unknown,
+    embeds: { [k: string]: Embed}
 }

@@ -47,6 +47,7 @@ class DBMClient extends discord_js_1.Client {
         this.logger = new Logger_1.Logger(this);
         this.handler = new Handler_1.Handler(this);
         this.database = new Database_1.Database(this);
+        // @ts-ignore
         this.plugins = {};
         this.init();
     }
@@ -60,6 +61,7 @@ class DBMClient extends discord_js_1.Client {
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.interactionHandler();
             this.logger.info(`Loading ${this.config.plugins.length} Plugins.`);
             yield this.loadPlugins();
             this.logger.info(`Starting handler.`);
@@ -74,10 +76,10 @@ class DBMClient extends discord_js_1.Client {
             yield Promise.all(this.config.plugins.map((v) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     const plugin_config = require(`../../plugins/${v}/plugin.config.json`);
-                    const mainInstance = fs.existsSync(`./plugins/${v}/index.js`) ? require(`../../plugins/${v}/index.js`) : null;
+                    const mainInstance = fs.existsSync(`./plugins/${v}/dist/index.js`) ? require(`../../plugins/${v}/dist/index.js`) : null;
                     this.plugins[v] = {
                         config: plugin_config,
-                        main: mainInstance ? new mainInstance(this) : null,
+                        main: mainInstance ? new mainInstance.default(this) : null,
                     };
                     this.logger.info(`> Plugin ${v} loaded`);
                 }
@@ -89,13 +91,25 @@ class DBMClient extends discord_js_1.Client {
     }
     interactionHandler() {
         this.on('interactionCreate', interaction => {
-            var _a;
+            var _a, _b, _c;
             if (interaction.isChatInputCommand()) {
                 const command = (_a = this.handler.slashcommands) === null || _a === void 0 ? void 0 : _a.data.get(interaction.commandName);
                 if (!command)
                     return this.logger.warn(`slashcommand ${interaction.commandName} not found`);
-                const embed = require(`../../plugins/${command.plugin_name}/${command.embeds_path}`);
-                command.execute(this, interaction, embed !== null && embed !== void 0 ? embed : {});
+                command.execute(this, interaction);
+            }
+            else if (interaction.isAutocomplete()) {
+                const command = (_b = this.handler.slashcommands) === null || _b === void 0 ? void 0 : _b.data.get(interaction.commandName);
+                if (!command || !(command === null || command === void 0 ? void 0 : command.autocomplete))
+                    return this.logger.warn(`autocomplete ${interaction.commandName} not found`);
+                command.autocomplete(this, interaction);
+            }
+            else if (interaction.isMessageComponent()) {
+                const componentsData = (_c = this.handler.components) === null || _c === void 0 ? void 0 : _c.data.get(discord_js_1.ComponentType[interaction.componentType]);
+                const component = componentsData === null || componentsData === void 0 ? void 0 : componentsData.get(interaction.customId.split("#")[0]);
+                if (!component)
+                    return this.logger.warn(`component ${discord_js_1.ComponentType[interaction.componentType]} ${interaction.customId.split("#")[0]} not found`);
+                component.execute(this, interaction);
             }
         });
     }

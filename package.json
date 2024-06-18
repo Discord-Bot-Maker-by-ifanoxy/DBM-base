@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "run": "node dist/index.js",
-    "start": "npm run build && npm run run"
+    "start": "npm run build && npm run run",
+    "type": "tsc -d --declarationDir lib --emitDeclarationOnly"
   },
   "keywords": [],
   "author": "",

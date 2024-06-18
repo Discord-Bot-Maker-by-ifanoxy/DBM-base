@@ -96,20 +96,20 @@ class DBMClient extends discord_js_1.Client {
                 const command = (_a = this.handler.slashcommands) === null || _a === void 0 ? void 0 : _a.data.get(interaction.commandName);
                 if (!command)
                     return this.logger.warn(`slashcommand ${interaction.commandName} not found`);
-                command.execute(this, interaction);
+                command.execute(this, this.plugins[command.plugin_name].main, interaction);
             }
             else if (interaction.isAutocomplete()) {
                 const command = (_b = this.handler.slashcommands) === null || _b === void 0 ? void 0 : _b.data.get(interaction.commandName);
                 if (!command || !(command === null || command === void 0 ? void 0 : command.autocomplete))
                     return this.logger.warn(`autocomplete ${interaction.commandName} not found`);
-                command.autocomplete(this, interaction);
+                command.autocomplete(this, this.plugins[command.plugin_name].main, interaction);
             }
             else if (interaction.isMessageComponent()) {
                 const componentsData = (_c = this.handler.components) === null || _c === void 0 ? void 0 : _c.data.get(discord_js_1.ComponentType[interaction.componentType]);
                 const component = componentsData === null || componentsData === void 0 ? void 0 : componentsData.get(interaction.customId.split("#")[0]);
                 if (!component)
                     return this.logger.warn(`component ${discord_js_1.ComponentType[interaction.componentType]} ${interaction.customId.split("#")[0]} not found`);
-                component.execute(this, interaction);
+                component.execute(this, this.plugins[component.plugin_name].main, interaction);
             }
         });
     }

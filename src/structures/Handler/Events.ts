@@ -2,6 +2,7 @@ import {Handler} from "../Handler";
 import {Events as DiscordEvents} from "discord.js";
 import {DBMClient} from "../DBMClient";
 import {EventFile} from "../typings/EventFile";
+import {PluginsNames} from "../typings/PluginsNames";
 
 export class Events {
     private client: DBMClient;
@@ -31,7 +32,7 @@ export class Events {
         Object.entries(events).forEach(([k, v]) => {
             this.client.on(k, (...args) => {
                 v.forEach(x => {
-                    x.run(this.client, ...args);
+                    x.run(this.client, this.client.plugins[x.plugin_name as PluginsNames], ...args);
                 })
             })
         })

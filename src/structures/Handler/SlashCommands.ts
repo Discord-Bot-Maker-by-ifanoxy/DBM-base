@@ -2,6 +2,7 @@ import {Handler} from "../Handler";
 import {Collection} from "discord.js";
 import {SlashCommandFile} from "../typings/SlashCommandFile";
 import {DBMClient} from "../DBMClient";
+import {PluginsNames} from "../typings/PluginsNames";
 
 export class SlashCommands {
     private client: DBMClient;
@@ -14,7 +15,7 @@ export class SlashCommands {
 
     public loadSlashCommands() {
         this.client.logger.info('Loading Slashcommands')
-        let commandsPath: [string, string[]][] = [];
+        let commandsPath: [PluginsNames, string[]][] = [];
         this.client.config.plugins.map(x => this.client.plugins[x].config).filter(x => x?.commandsDir).forEach(v => {
             try {
                 const commands = Handler.getPathsFiles(`./plugins/${v.name}/dist/${v.commandsDir}`);

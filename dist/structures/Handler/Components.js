@@ -19,16 +19,18 @@ class Components {
             try {
                 const components = Handler_1.Handler.getPathsFiles(`./plugins/${v.name}/dist/${v.componentsDir}`);
                 this.client.logger.info(`> Plugin ${v.name} - ${components.length} components added`);
-                componentsPath.concat(components);
+                componentsPath.push([v.name, components]);
             }
             catch (_a) {
                 this.client.logger.warn(`> Fail on loading components in ${v.name} plugin`);
             }
         });
-        for (let path of componentsPath) {
-            const dist = require('../../../' + path).default;
-            const type = this.data.get(discord_js_1.ComponentType[dist.type]);
-            type === null || type === void 0 ? void 0 : type.set(dist.customId, dist);
+        for (let plugin of componentsPath) {
+            for (let path of plugin[1]) {
+                const dist = require('../../../' + path).default;
+                const type = this.data.get(discord_js_1.ComponentType[dist.type]);
+                type === null || type === void 0 ? void 0 : type.set(dist.customId, Object.assign(Object.assign({}, dist), { plugin_name: plugin[0] }));
+            }
         }
     }
 }

@@ -69,19 +69,19 @@ export class DBMClient extends Client {
             {
                 const command = this.handler.slashcommands?.data.get(interaction.commandName);
                 if (!command)return this.logger.warn(`slashcommand ${interaction.commandName} not found`);
-                command.execute(this, interaction);
+                command.execute(this, this.plugins[command.plugin_name].main, interaction);
             } else if (interaction.isAutocomplete())
             {
 
                 const command = this.handler.slashcommands?.data.get(interaction.commandName);
                 if (!command || !command?.autocomplete)return this.logger.warn(`autocomplete ${interaction.commandName} not found`);
-                command.autocomplete(this, interaction);
+                command.autocomplete(this, this.plugins[command.plugin_name].main, interaction);
             } else if (interaction.isMessageComponent())
             {
                 const componentsData = this.handler.components?.data.get(ComponentType[interaction.componentType] as keyof typeof ComponentType);
                 const component = componentsData?.get(interaction.customId.split("#")[0]);
                 if (!component)return this.logger.warn(`component ${ComponentType[interaction.componentType]} ${interaction.customId.split("#")[0]} not found`);
-                component.execute(this, interaction);
+                component.execute(this, this.plugins[component.plugin_name].main, interaction);
             }
         })
     }

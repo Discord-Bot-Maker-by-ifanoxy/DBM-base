@@ -29,7 +29,7 @@ class Events {
         Object.entries(events).forEach(([k, v]) => {
             this.client.on(k, (...args) => {
                 v.forEach(x => {
-                    x.run(this.client, ...args);
+                    x.run(this.client, this.client.plugins[x.plugin_name], ...args);
                 });
             });
         });

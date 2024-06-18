@@ -2,6 +2,7 @@ import {Handler} from "../Handler";
 import {Collection, ComponentType} from "discord.js";
 import {DBMClient} from "../DBMClient";
 import {ComponentFile} from "../typings/ComponentFile";
+import {PluginsNames} from "../typings/PluginsNames";
 
 
 
@@ -19,22 +20,24 @@ export class Components {
 
     public loadComponents() {
         this.client.logger.info('Loading Components')
-        let componentsPath: string[] = [];
+        let componentsPath: [PluginsNames, string[]][] = [];
         this.client.config.plugins.map(x => this.client.plugins[x]?.config).filter(x => x?.componentsDir).forEach(v => {
             try {
                 const components = Handler.getPathsFiles(`./plugins/${v.name}/dist/${v.componentsDir}`);
                 this.client.logger.info(`> Plugin ${v.name} - ${components.length} components added`);
-                componentsPath.concat(components);
+                componentsPath.push([v.name, components]);
             } catch {
                 this.client.logger.warn(`> Fail on loading components in ${v.name} plugin`)
             }
         });
 
-        for (let path of componentsPath)
+        for (let plugin of componentsPath)
         {
-            const dist = require('../../../' + path).default as ComponentFile;
-            const type = this.data.get(ComponentType[dist.type] as keyof typeof ComponentType);
-            type?.set(dist.customId, dist);
+            for (let path of plugin[1]) {
+                const dist = require('../../../' + path).default as ComponentFile;
+                const type = this.data.get(ComponentType[dist.type] as keyof typeof ComponentType);
+                type?.set(dist.customId, {...dist, plugin_name: plugin[0]});
+            }
         }
     }
 }

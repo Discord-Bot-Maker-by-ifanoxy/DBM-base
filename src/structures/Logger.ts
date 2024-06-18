@@ -22,12 +22,13 @@ export class Logger {
     public error(...messages: unknown[]): void {
         this.write(LoggerLevels.ERROR, ...messages);
     }
-    public fatal(...messages: unknown[]): void {
-        this.write(LoggerLevels.FATAL, ...messages);
+    public fatal(message: string, error?: Error): void {
+        this.write(LoggerLevels.FATAL, message);
+        if (error) throw error;
     }
 
     private write(level: LoggerLevels,...messages: unknown[]): void {
-        console.log(`[${Logger.FormatDate()}] ${level}:`,...messages);
+        console.log(`[${Logger.FormatDate()}] ${LoggerLevels[level]}:`,...messages);
     }
 
     public static FormatDate(date: Date = new Date()): string {

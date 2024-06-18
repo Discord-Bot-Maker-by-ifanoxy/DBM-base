@@ -20,9 +20,9 @@ export class Components {
     public loadComponents() {
         this.client.logger.info('Loading Components')
         let componentsPath: string[] = [];
-        this.client.config.plugins.forEach(v => {
+        this.client.config.plugins.map(x => this.client.plugins[x]?.config).filter(x => x?.componentsDir).forEach(v => {
             try {
-                const components = Handler.getPathsFiles(`./plugins/${v.name}/components`);
+                const components = Handler.getPathsFiles(`./plugins/${v.name}/${v.componentsDir}`);
                 this.client.logger.info(`> Plugin ${v.name} - ${components.length} components added`);
                 componentsPath.concat(components);
             } catch {

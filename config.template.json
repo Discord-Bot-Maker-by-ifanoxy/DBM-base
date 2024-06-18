@@ -3,5 +3,12 @@
     "token": ""
   },
   "plugins": [],
-  "logger_levels": 2
+  "logger_levels": 2,
+  "database": {
+    "name": "",
+    "host": "",
+    "port": "",
+    "username": "",
+    "password": ""
+  }
 }

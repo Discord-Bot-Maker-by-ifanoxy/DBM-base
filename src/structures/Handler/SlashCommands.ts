@@ -14,21 +14,24 @@ export class SlashCommands {
 
     public loadSlashCommands() {
         this.client.logger.info('Loading Slashcommands')
-        let commandsPath: string[] = [];
-        this.client.config.plugins.forEach(v => {
+        let commandsPath: [string, string[]][] = [];
+        this.client.config.plugins.map(x => this.client.plugins[x]?.config).filter(x => x?.commandsDir).forEach(v => {
             try {
-                const commands = Handler.getPathsFiles(`./plugins/${v.name}/slashcommands`);
+                const commands = Handler.getPathsFiles(`./plugins/${v.name}/${v.commandsDir}`);
                 this.client.logger.info(`> Plugin ${v.name} - ${commands.length} slashcommands added`);
-                commandsPath.concat(commands);
+                commandsPath.push([v.name, commands]);
             } catch {
                 this.client.logger.warn(`> Fail on loading slashcommands in ${v.name} plugin`)
             }
         });
 
-        for (let path of commandsPath)
+        for (let plugin of commandsPath)
         {
-            const dist = require('../../../' + path) as SlashCommandFile;
-            this.data.set(dist.builder.name, dist);
+            for (let path of plugin[1])
+            {
+                const dist = require('../../../' + path) as SlashCommandFile;
+                this.data.set(dist.builder.name, {...dist, plugin_name: plugin[0] });
+            }
         }
     }
 }

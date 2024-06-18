@@ -5,14 +5,16 @@
   "scripts": {
     "build": "tsc",
     "run": "node dist/index.js",
-    "start": "npm run build && npm run start"
+    "start": "npm run build && npm run run"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "discord.js": "^14.15.3"
+    "discord.js": "^14.15.3",
+    "mysql2": "^3.10.1",
+    "sequelize": "^6.37.3"
   },
   "devDependencies": {
     "discord-api-types": "^0.37.89"

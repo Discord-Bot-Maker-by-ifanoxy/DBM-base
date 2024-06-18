@@ -28,6 +28,7 @@ export class Logger {
     }
 
     private write(level: LoggerLevels,...messages: unknown[]): void {
+        if (this.client.config.logger_levels < level)return;
         console.log(`[${Logger.FormatDate()}] ${LoggerLevels[level]}:`,...messages);
     }
 

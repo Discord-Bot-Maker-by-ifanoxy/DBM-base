@@ -10,7 +10,7 @@ import {PluginConfig} from "./typings/PluginConfig";
 export class DBMClient extends Client {
     public config: Config;
     public logger: Logger;
-    public plugins: { [k in PluginsNames]: { config: PluginConfig, main?: any}};
+    public plugins: { [k in PluginsNames]: { config: PluginConfig, main?: any}} | {} = {};
     public handler: Handler;
     public database: Database;
     public constructor(Intents: IntentsBitField[], config: Config) {
@@ -20,8 +20,6 @@ export class DBMClient extends Client {
         this.config = config;
         this.logger = new Logger(this);
         this.handler = new Handler(this);
-        this.database = new Database(this);
-        this.plugins = this.config.plugins.reduce(x => ({[x as PluginsNames]: { config: null, main: null}}), {}) as { [k in PluginsNames]: { config: PluginConfig, main?: any}};
         this.init();
     }
 
@@ -36,13 +34,16 @@ export class DBMClient extends Client {
     }
 
     private async init() {
-        this.interactionHandler();
+        this.logger.info('Initialization of database');
+        await Database.createDatabase(this.config.database);
+        this.database = new Database(this);
+        this.logger.info(`Connecting to Database.`);
+        await this.database.connect();
+        this.loadlisteners();
         this.logger.info(`Loading ${this.config.plugins.length} Plugins.`);
         await this.loadPlugins();
         this.logger.info(`Starting handler.`);
         await this.handler.init();
-        this.logger.info(`Connecting to Database.`);
-        await this.database.connect();
         await this.login(this.config.client.token);
     }
 
@@ -62,27 +63,32 @@ export class DBMClient extends Client {
         }))
     }
 
-    private interactionHandler() {
+    private loadlisteners() {
         this.on('interactionCreate', interaction => {
             if (interaction.isChatInputCommand())
             {
+                this.logger.trace(`${interaction.user.username} call ${interaction.commandName} slash command`);
                 const command = this.handler.slashcommands?.data.get(interaction.commandName);
                 if (!command)return this.logger.warn(`slashcommand ${interaction.commandName} not found`);
                 command.execute(this, interaction, this.plugins[command.plugin_name].main);
             } else if (interaction.isAutocomplete())
             {
-
+                this.logger.trace(`${interaction.user.username} call ${interaction.commandName} auto complete`);
                 const command = this.handler.slashcommands?.data.get(interaction.commandName);
                 if (!command || !command?.autocomplete)return this.logger.warn(`autocomplete ${interaction.commandName} not found`);
                 command.autocomplete(this, interaction, this.plugins[command.plugin_name].main);
             } else if (interaction.isMessageComponent())
             {
+                this.logger.trace(`${interaction.user.username} call ${interaction.customId} ${ComponentType[interaction.componentType]}`);
                 if (interaction.customId.startsWith('[no-check]'))return;
                 const componentsData = this.handler.components?.data.get(ComponentType[interaction.componentType] as keyof typeof ComponentType);
                 const component = componentsData?.get(interaction.customId.split("#")[0]);
                 if (!component)return this.logger.warn(`component ${ComponentType[interaction.componentType]} ${interaction.customId.split("#")[0]} not found`);
                 component.execute(this, interaction, this.plugins[component.plugin_name].main);
             }
-        })
+        });
+
+        this.on("warn", (message) => this.logger.warn(message));
+        this.on("error", (error) => this.logger.error(error));
     }
 }

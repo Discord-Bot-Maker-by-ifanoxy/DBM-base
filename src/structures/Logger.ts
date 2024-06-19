@@ -7,23 +7,27 @@ export class Logger {
         this.client = client;
     }
 
+    private formatParagraph(x: any) {
+        return typeof x == 'string' ? x.replaceAll('\n', `\n[${Logger.FormatDate()}]`) : x;
+    }
+
     public trace(...messages: unknown[]): void {
-        this.write(LoggerLevels.TRACE, ...messages);
+        this.write(LoggerLevels.TRACE, ...messages.map(this.formatParagraph));
     }
     public debug(...messages: unknown[]): void {
-        this.write(LoggerLevels.DEBUG, ...messages);
+        this.write(LoggerLevels.DEBUG, ...messages.map(this.formatParagraph));
     }
     public info(...messages: unknown[]): void {
-        this.write(LoggerLevels.INFO, ...messages);
+        this.write(LoggerLevels.INFO, ...messages.map(this.formatParagraph));
     }
     public warn(...messages: unknown[]): void {
-        this.write(LoggerLevels.WARN, ...messages);
+        this.write(LoggerLevels.WARN, ...messages.map(this.formatParagraph));
     }
     public error(...messages: unknown[]): void {
-        this.write(LoggerLevels.ERROR, ...messages);
+        this.write(LoggerLevels.ERROR, ...messages.map(this.formatParagraph));
     }
     public fatal(message: string, error?: Error): void {
-        this.write(LoggerLevels.FATAL, message);
+        this.write(LoggerLevels.FATAL, this.formatParagraph(message));
         if (error) throw error;
     }
 

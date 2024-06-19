@@ -27,6 +27,8 @@ class Logger {
             throw error;
     }
     write(level, ...messages) {
+        if (this.client.config.logger_levels > level)
+            return;
         console.log(`[${Logger.FormatDate()}] ${LoggerLevels_1.LoggerLevels[level]}:`, ...messages);
     }
     static FormatDate(date = new Date()) {

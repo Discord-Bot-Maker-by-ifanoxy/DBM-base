@@ -21,8 +21,7 @@ export class DBMClient extends Client {
         this.logger = new Logger(this);
         this.handler = new Handler(this);
         this.database = new Database(this);
-        // @ts-ignore
-        this.plugins = {};
+        this.plugins = this.config.plugins.reduce(x => ({[x as PluginsNames]: { config: null, main: null}}), {}) as { [k in PluginsNames]: { config: PluginConfig, main?: any}};
         this.init();
     }
 
@@ -69,19 +68,20 @@ export class DBMClient extends Client {
             {
                 const command = this.handler.slashcommands?.data.get(interaction.commandName);
                 if (!command)return this.logger.warn(`slashcommand ${interaction.commandName} not found`);
-                command.execute(this, this.plugins[command.plugin_name].main, interaction);
+                command.execute(this, interaction, this.plugins[command.plugin_name].main);
             } else if (interaction.isAutocomplete())
             {
 
                 const command = this.handler.slashcommands?.data.get(interaction.commandName);
                 if (!command || !command?.autocomplete)return this.logger.warn(`autocomplete ${interaction.commandName} not found`);
-                command.autocomplete(this, this.plugins[command.plugin_name].main, interaction);
+                command.autocomplete(this, interaction, this.plugins[command.plugin_name].main);
             } else if (interaction.isMessageComponent())
             {
+                if (interaction.customId.startsWith('[no-check]'))return;
                 const componentsData = this.handler.components?.data.get(ComponentType[interaction.componentType] as keyof typeof ComponentType);
                 const component = componentsData?.get(interaction.customId.split("#")[0]);
                 if (!component)return this.logger.warn(`component ${ComponentType[interaction.componentType]} ${interaction.customId.split("#")[0]} not found`);
-                component.execute(this, this.plugins[component.plugin_name].main, interaction);
+                component.execute(this, interaction, this.plugins[component.plugin_name].main);
             }
         })
     }

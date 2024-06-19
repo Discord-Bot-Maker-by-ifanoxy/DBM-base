@@ -4,8 +4,8 @@ import {PluginsNames} from "./PluginsNames";
 
 export interface SlashCommandFile {
     builder: SlashCommandBuilder,
-    autocomplete?: (client: DBMClient, plugin: any | null, interaction: AutocompleteInteraction) => unknown,
-    execute: (client: DBMClient, plugin: any | null, interaction: ChatInputCommandInteraction) => unknown,
+    autocomplete?: (client: DBMClient, interaction: AutocompleteInteraction, plugin: any | null) => unknown,
+    execute: (client: DBMClient, interaction: ChatInputCommandInteraction, plugin: any | null) => unknown,
     embeds: { [k: string]: Embed},
     plugin_name: PluginsNames
 }

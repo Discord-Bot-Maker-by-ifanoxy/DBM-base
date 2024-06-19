@@ -47,8 +47,7 @@ class DBMClient extends discord_js_1.Client {
         this.logger = new Logger_1.Logger(this);
         this.handler = new Handler_1.Handler(this);
         this.database = new Database_1.Database(this);
-        // @ts-ignore
-        this.plugins = {};
+        this.plugins = this.config.plugins.reduce(x => ({ [x]: { config: null, main: null } }), {});
         this.init();
     }
     static extractIntents(config) {
@@ -96,20 +95,22 @@ class DBMClient extends discord_js_1.Client {
                 const command = (_a = this.handler.slashcommands) === null || _a === void 0 ? void 0 : _a.data.get(interaction.commandName);
                 if (!command)
                     return this.logger.warn(`slashcommand ${interaction.commandName} not found`);
-                command.execute(this, this.plugins[command.plugin_name].main, interaction);
+                command.execute(this, interaction, this.plugins[command.plugin_name].main);
             }
             else if (interaction.isAutocomplete()) {
                 const command = (_b = this.handler.slashcommands) === null || _b === void 0 ? void 0 : _b.data.get(interaction.commandName);
                 if (!command || !(command === null || command === void 0 ? void 0 : command.autocomplete))
                     return this.logger.warn(`autocomplete ${interaction.commandName} not found`);
-                command.autocomplete(this, this.plugins[command.plugin_name].main, interaction);
+                command.autocomplete(this, interaction, this.plugins[command.plugin_name].main);
             }
             else if (interaction.isMessageComponent()) {
+                if (interaction.customId.startsWith('[no-check]'))
+                    return;
                 const componentsData = (_c = this.handler.components) === null || _c === void 0 ? void 0 : _c.data.get(discord_js_1.ComponentType[interaction.componentType]);
                 const component = componentsData === null || componentsData === void 0 ? void 0 : componentsData.get(interaction.customId.split("#")[0]);
                 if (!component)
                     return this.logger.warn(`component ${discord_js_1.ComponentType[interaction.componentType]} ${interaction.customId.split("#")[0]} not found`);
-                component.execute(this, this.plugins[component.plugin_name].main, interaction);
+                component.execute(this, interaction, this.plugins[component.plugin_name].main);
             }
         });
     }

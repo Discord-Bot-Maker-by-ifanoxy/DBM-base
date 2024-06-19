@@ -8,6 +8,7 @@ class SlashCommands {
         this.client = client;
         this.data = new discord_js_1.Collection();
         this.loadSlashCommands();
+        this.client.once('ready', e => e.application.commands.set(this.data.map(x => x.builder.toJSON())));
     }
     loadSlashCommands() {
         this.client.logger.info('Loading Slashcommands');

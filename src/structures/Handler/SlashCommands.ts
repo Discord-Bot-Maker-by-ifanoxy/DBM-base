@@ -11,6 +11,7 @@ export class SlashCommands {
         this.client = client;
         this.data = new Collection();
         this.loadSlashCommands();
+        this.client.once('ready', e => e.application.commands.set(this.data.map(x => x.builder.toJSON())))
     }
 
     public loadSlashCommands() {

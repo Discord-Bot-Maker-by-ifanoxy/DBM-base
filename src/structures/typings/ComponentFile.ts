@@ -17,7 +17,7 @@ type AnyInteraction =
 export interface ComponentFile<I extends AnyInteraction | any = any> {
     customId: string,
     type: ComponentType,
-    execute: (client: DBMClient, plugin: any | null, interaction: I extends AnyInteraction ? I : any) => unknown,
+    execute: (client: DBMClient, interaction: I extends AnyInteraction ? I : any, plugin: any | null) => unknown,
     embeds: { [k: string]: Embed},
     plugin_name: PluginsNames
 }

@@ -37,7 +37,7 @@ class DBMClient extends discord_js_1.Client {
     database;
     constructor(Intents, config) {
         super({
-            intents: Intents
+            intents: new discord_js_1.IntentsBitField(Intents)
         });
         this.config = config;
         this.logger = new Logger_1.Logger(this);
@@ -45,12 +45,12 @@ class DBMClient extends discord_js_1.Client {
         this.init();
     }
     static extractIntents(config) {
-        const intents = new Set;
+        let intents = [];
         for (let i = 0; i < config.plugins.length; i++) {
             const plugin_config = require(`../../plugins/${config.plugins[i]}/plugin.config.json`);
-            plugin_config.intentsDependencies.forEach((v) => intents.has(v) ? null : intents.add(v));
+            plugin_config.intentsDependencies.forEach((v) => intents = intents.concat(new discord_js_1.IntentsBitField(v).toArray()));
         }
-        return [...intents];
+        return [...new Set(intents)];
     }
     async init() {
         this.logger.info('Initialization of database');

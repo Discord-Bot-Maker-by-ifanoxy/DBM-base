@@ -1,4 +1,4 @@
-import {Client, ComponentType, IntentsBitField} from "discord.js";
+import {Client, ComponentType, GatewayIntentBits, IntentsBitField} from "discord.js";
 import {Config} from "./typings/Config";
 import {Logger} from "./Logger";
 import {PluginsNames} from "./typings/PluginsNames";
@@ -6,6 +6,7 @@ import {Handler} from "./Handler";
 import {Database} from "./Database";
 import * as fs from "fs";
 import {PluginConfig} from "./typings/PluginConfig";
+import {GatewayIntentsString} from "discord.js/typings";
 
 export class DBMClient extends Client {
     public config: Config;
@@ -13,9 +14,9 @@ export class DBMClient extends Client {
     public plugins: { [k in PluginsNames]: { config: PluginConfig, main?: any}} | {} = {};
     public handler: Handler;
     public database: Database;
-    public constructor(Intents: IntentsBitField[], config: Config) {
+    public constructor(Intents: GatewayIntentsString[], config: Config) {
         super({
-            intents: Intents
+            intents: new IntentsBitField(Intents)
         });
         this.config = config;
         this.logger = new Logger(this);
@@ -23,14 +24,14 @@ export class DBMClient extends Client {
         this.init();
     }
 
-    public static extractIntents(config:Config): IntentsBitField[] {
-        const intents: Set<IntentsBitField> = new Set;
+    public static extractIntents(config:Config): GatewayIntentsString[] {
+        let intents: GatewayIntentsString[] = [];
         for (let i = 0; i < config.plugins.length; i++)
         {
             const plugin_config = require(`../../plugins/${config.plugins[i]}/plugin.config.json`);
-            plugin_config.intentsDependencies.forEach((v: IntentsBitField) => intents.has(v) ? null : intents.add(v));
+            plugin_config.intentsDependencies.forEach((v: number) => intents = intents.concat(new IntentsBitField(v).toArray()));
         }
-        return [...intents];
+        return [...new Set(intents)];
     }
 
     private async init() {
